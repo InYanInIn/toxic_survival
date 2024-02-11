@@ -1,7 +1,6 @@
 # toxic_survival
 
 empty
-#fjdjfjfdjjfjfjjfj andrei
 ## Getting Started
 
 This project is a starting point for a Flutter application.
