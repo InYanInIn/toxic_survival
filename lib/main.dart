@@ -40,22 +40,38 @@ class _MainScreenState extends State<MainScreen> {
 
 
   void changeResource(int resource1, int resource2, int count){
-    switch(resource1){
-      case 0: oxygen += count;
-      case 1: electricity += count;
-      case 2: water += count;
-      case 3: mood += count;
-    }
-    switch(resource2){
-      case 0: oxygen += count;
-      case 1: electricity += count;
-      case 2: water += count;
-      case 3: mood += count;
-    }
+    print('$resource1 $resource2 $count');
+    setState(() {
+      switch(resource1){
+        case 0:
+          oxygen += count;
+          break;
+        case 1:
+          electricity += count;
+          break;
+        case 2:
+          water += count;
+          break;
+        case 3:
+          mood += count;
+          break;
+      }
+      switch(resource2){
+        case 0:
+          oxygen -= count;
+          break;
+        case 1:
+          electricity -= count;
+          break;
+        case 2:
+          water -= count;
+          break;
+        case 3:
+          mood -= count;
+          break;
+      }
+    });
   }
-  int a = 0;
-  int b = 1;
-  int c = 5;
 
 
   List<MenuItem> menuItemsOxygen = [];
