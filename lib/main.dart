@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 void main() {
   runApp(MyGame());
 }
@@ -23,7 +22,8 @@ class MenuItem {
   final Function onPressed;
   final String description;
 
-  MenuItem({required this.text, required this.onPressed, required this.description});
+  MenuItem(
+      {required this.text, required this.onPressed, required this.description});
 }
 
 class MainScreen extends StatefulWidget {
@@ -32,47 +32,19 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int oxygen = 100;
-  int electricity = 100;
-  int water = 100;
-  int mood = 100;
+  Map<String, int> resources = {
+    'oxygen': 100,
+    'electricity': 100,
+    'water': 100,
+    'mood': 100,
+  };
 
-
-
-  void changeResource(int resource1, int resource2, int count){
-    print('$resource1 $resource2 $count');
+  void changeResource(String resource1, String resource2, int count) {
     setState(() {
-      switch(resource1){
-        case 0:
-          oxygen += count;
-          break;
-        case 1:
-          electricity += count;
-          break;
-        case 2:
-          water += count;
-          break;
-        case 3:
-          mood += count;
-          break;
-      }
-      switch(resource2){
-        case 0:
-          oxygen -= count;
-          break;
-        case 1:
-          electricity -= count;
-          break;
-        case 2:
-          water -= count;
-          break;
-        case 3:
-          mood -= count;
-          break;
-      }
+      resources[resource1] = (resources[resource1] ?? 0) + count;
+      resources[resource2] = (resources[resource2] ?? 0) - count;
     });
   }
-
 
   List<MenuItem> menuItemsOxygen = [];
   late List<MenuItem> menuItemsMood = [];
@@ -82,14 +54,69 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    menuItemsOxygen = [MenuItem(text: 'Открыть окно', onPressed: () => changeResource(0, 1, 5), description: "description")];
-    menuItemsMood = [MenuItem(text: 'Выпить воды', onPressed: () => changeResource(3, 2, 5), description: "description")];
-    menuItemsElectricity = [MenuItem(text: 'Сжечь мусор', onPressed: () => changeResource(1, 0, 5), description: "description")];
-    menuItemWater = [MenuItem(text: 'Отфильтроваить воду', onPressed: () => changeResource(2, 3, 5), description: "description")];
+    menuItemsOxygen = [
+      MenuItem(
+          text: 'Открыть окно',
+          onPressed: () => changeResource('oxygen', 'electricity', 5),
+          description: "description")
+    ];
+    menuItemsOxygen.add(MenuItem(
+        text: 'Открыть окно 2',
+        onPressed: () => changeResource('oxygen', 'electricity', 10),
+        description: "description"));
+    menuItemsOxygen.add(MenuItem(
+        text: 'Открыть окно 2',
+        onPressed: () => changeResource('oxygen', 'electricity', 10),
+        description: "description"));
+    menuItemsOxygen.add(MenuItem(
+        text: 'Открыть окно 2',
+        onPressed: () => changeResource('oxygen', 'electricity', 10),
+        description: "description"));
+    menuItemsOxygen.add(MenuItem(
+        text: 'Открыть окно 2',
+        onPressed: () => changeResource('oxygen', 'electricity', 10),
+        description: "description"));
+    menuItemsOxygen.add(MenuItem(
+        text: 'Открыть окно 2',
+        onPressed: () => changeResource('oxygen', 'electricity', 10),
+        description: "description"));
+    menuItemsOxygen.add(MenuItem(
+        text: 'Открыть окно 2',
+        onPressed: () => changeResource('oxygen', 'electricity', 10),
+        description: "description"));
+    menuItemsMood = [
+      MenuItem(
+          text: 'Выпить воды',
+          onPressed: () => changeResource('mood', 'water', 5),
+          description: "description")
+    ];
+    menuItemsMood.add(MenuItem(
+        text: 'Выпить воды 2',
+        onPressed: () => changeResource('mood', 'water', 10),
+        description: "description"));
+    menuItemsElectricity = [
+      MenuItem(
+          text: 'Сжечь мусор',
+          onPressed: () => changeResource('electricity', 'oxygen', 5),
+          description: "description")
+    ];
+    menuItemsElectricity.add(MenuItem(
+        text: 'Сжечь мусор 2',
+        onPressed: () => changeResource('electricity', 'oxygen', 10),
+        description: "description"));
+    menuItemWater = [
+      MenuItem(
+          text: 'Отфильтроваить воду',
+          onPressed: () => changeResource('water', 'mood', 5),
+          description: "description")
+    ];
+    menuItemWater.add(MenuItem(
+        text: 'Отфильтроваить воду 2',
+        onPressed: () => changeResource('water', 'mood', 10),
+        description: "description"));
   }
 
-
-  void showCustomMenu(List<MenuItem> menuItems) {
+  void showCustomMenu(List<MenuItem> menuItems, String text) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -104,33 +131,44 @@ class _MainScreenState extends State<MainScreen> {
               padding: const EdgeInsets.all(12.0),
               child: SingleChildScrollView(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: menuItems.map((menuItem) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
-                      child: Container(
-                        padding: EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.grey,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(menuItem.text),
-                            TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white, backgroundColor: Colors.blue,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Улучшить $text',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    // Добавьте это для пространства между текстом и меню
+                    ...menuItems.map((menuItem) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.grey,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(menuItem.text),
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.blue,
+                                ),
+                                child: Text('Button'),
+                                onPressed: () => menuItem.onPressed(),
                               ),
-                              child: Text('Button'),
-                              onPressed: () => menuItem.onPressed(),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ],
                 ),
               ),
             ),
@@ -139,7 +177,6 @@ class _MainScreenState extends State<MainScreen> {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -155,10 +192,39 @@ class _MainScreenState extends State<MainScreen> {
         child: SafeArea(
           child: Column(
             children: <Widget>[
-              Text('Oxygen: $oxygen'),
-              Text('Electricity: $electricity'),
-              Text('Water: $water'),
-              Text('Mood: $mood'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Text('Oxygen: ${resources['oxygen']}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold)),
+                      Text('Electricity: ${resources['electricity']}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  Column(
+                    children: <Widget>[
+                      Text('Water: ${resources['water']}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold)),
+                      Text('Mood: ${resources['mood']}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ],
+              ),
               Expanded(
                 child: Center(
                   child: Stack(
@@ -168,35 +234,43 @@ class _MainScreenState extends State<MainScreen> {
                         top: 100,
                         right: 100,
                         child: GestureDetector(
-                          onTap: () => showCustomMenu(menuItemsOxygen),
-                          child: Image.asset('assets/object4.png', width: 200, height: 200),
+                          onTap: () =>
+                              showCustomMenu(menuItemsOxygen, 'кислород'),
+                          child: Image.asset('assets/object4.png',
+                              width: 200, height: 200),
                         ),
                       ),
                       Positioned(
                         right: 10,
                         child: GestureDetector(
-                          onTap: () => showCustomMenu(menuItemsElectricity),
-                          child: Image.asset('assets/object1.png', width: 80, height: 80),
+                          onTap: () => showCustomMenu(
+                              menuItemsElectricity, 'элетричество'),
+                          child: Image.asset('assets/object1.png',
+                              width: 80, height: 80),
                         ),
                       ),
                       Positioned(
                         bottom: 10,
                         child: GestureDetector(
-                          onTap: () => showCustomMenu(menuItemWater),
-                          child: Image.asset('assets/object2.png', width: 80, height: 80),
+                          onTap: () => showCustomMenu(menuItemWater, 'воду'),
+                          child: Image.asset('assets/object2.png',
+                              width: 80, height: 80),
                         ),
                       ),
                       Positioned(
                         left: 10,
                         child: GestureDetector(
-                          onTap: () => showCustomMenu(menuItemsMood),
-                          child: Image.asset('assets/object3.png', width: 80, height: 80),
+                          onTap: () =>
+                              showCustomMenu(menuItemsMood, 'настроение'),
+                          child: Image.asset('assets/object3.png',
+                              width: 80, height: 80),
                         ),
                       ),
                       Positioned(
                         bottom: 200,
                         child: GestureDetector(
-                          child: Image.asset('assets/hero.png', width: 200, height: 200),
+                          child: Image.asset('assets/hero.png',
+                              width: 200, height: 200),
                         ),
                       ),
                     ],
