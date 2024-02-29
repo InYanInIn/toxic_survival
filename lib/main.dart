@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:math';
+import 'dart:ui';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(MyGame());
@@ -25,6 +29,100 @@ class MenuItem {
   MenuItem(
       {required this.text, required this.onPressed, required this.description});
 }
+
+class Particle {
+  Offset position;
+  Offset targetPosition;
+  bool isClean;
+
+  Particle({required this.position, required this.targetPosition, this.isClean = false});
+}
+
+class AirFilterGameScreen extends StatefulWidget {
+  @override
+  _AirFilterGameScreenState createState() => _AirFilterGameScreenState();
+}
+
+class _AirFilterGameScreenState extends State<AirFilterGameScreen> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  List<Particle> particles = [];
+  final rand = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    )..addListener(_moveParticles)
+      ..repeat();
+
+    _initParticles();
+  }
+
+  void _initParticles() {
+    particles = List.generate(20, (_) => Particle(
+      position: Offset(rand.nextDouble() * MediaQuery.of(context).size.width,
+          rand.nextDouble() * MediaQuery.of(context).size.height),
+      targetPosition: Offset(rand.nextDouble() * MediaQuery.of(context).size.width,
+          rand.nextDouble() * MediaQuery.of(context).size.height),
+      isClean: rand.nextBool(),
+    ));
+  }
+
+
+  void _moveParticles() {
+    setState(() {
+      for (var particle in particles) {
+        final dx = (particle.targetPosition.dx - particle.position.dx) * 0.05;
+        final dy = (particle.targetPosition.dy - particle.position.dy) * 0.05;
+        particle.position = Offset(particle.position.dx + dx, particle.position.dy + dy);
+
+        // Периодически обновляем целевую позицию
+        if (rand.nextDouble() < 0.01) {
+          particle.targetPosition = Offset(rand.nextDouble() * MediaQuery.of(context).size.width,
+              rand.nextDouble() * MediaQuery.of(context).size.height);
+        }
+      }
+    });
+  }
+
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+
+
+  void _cleanParticle(int index) {
+    setState(() {
+      particles[index].isClean = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: particles.map((particle) => Positioned(
+          left: particle.position.dx,
+          top: particle.position.dy,
+          child: Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: particle.isClean ? Colors.green : Colors.red,
+              shape: BoxShape.circle,
+            ),
+          ),
+        )).toList(),
+      ),
+    );
+  }
+}
+
 
 class MainScreen extends StatefulWidget {
   @override
@@ -178,9 +276,17 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  void openAirFilterGame() {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => AirFilterGameScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: openAirFilterGame,
+        child: Icon(Icons.play_arrow),
+      ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
