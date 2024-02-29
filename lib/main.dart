@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:math';
 import 'dart:ui';
-import 'package:flutter/material.dart';
+
+import '_AirFilterGameScreenState.dart';
 
 void main() {
   runApp(MyGame());
@@ -30,100 +29,6 @@ class MenuItem {
       {required this.text, required this.onPressed, required this.description});
 }
 
-class Particle {
-  Offset position;
-  Offset targetPosition;
-  bool isClean;
-
-  Particle({required this.position, required this.targetPosition, this.isClean = false});
-}
-
-class AirFilterGameScreen extends StatefulWidget {
-  @override
-  _AirFilterGameScreenState createState() => _AirFilterGameScreenState();
-}
-
-class _AirFilterGameScreenState extends State<AirFilterGameScreen> with TickerProviderStateMixin {
-  late AnimationController _controller;
-  List<Particle> particles = [];
-  final rand = Random();
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..addListener(_moveParticles)
-      ..repeat();
-
-    _initParticles();
-  }
-
-  void _initParticles() {
-    particles = List.generate(20, (_) => Particle(
-      position: Offset(rand.nextDouble() * MediaQuery.of(context).size.width,
-          rand.nextDouble() * MediaQuery.of(context).size.height),
-      targetPosition: Offset(rand.nextDouble() * MediaQuery.of(context).size.width,
-          rand.nextDouble() * MediaQuery.of(context).size.height),
-      isClean: rand.nextBool(),
-    ));
-  }
-
-
-  void _moveParticles() {
-    setState(() {
-      for (var particle in particles) {
-        final dx = (particle.targetPosition.dx - particle.position.dx) * 0.05;
-        final dy = (particle.targetPosition.dy - particle.position.dy) * 0.05;
-        particle.position = Offset(particle.position.dx + dx, particle.position.dy + dy);
-
-        // Периодически обновляем целевую позицию
-        if (rand.nextDouble() < 0.01) {
-          particle.targetPosition = Offset(rand.nextDouble() * MediaQuery.of(context).size.width,
-              rand.nextDouble() * MediaQuery.of(context).size.height);
-        }
-      }
-    });
-  }
-
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-
-
-  void _cleanParticle(int index) {
-    setState(() {
-      particles[index].isClean = true;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: particles.map((particle) => Positioned(
-          left: particle.position.dx,
-          top: particle.position.dy,
-          child: Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: particle.isClean ? Colors.green : Colors.red,
-              shape: BoxShape.circle,
-            ),
-          ),
-        )).toList(),
-      ),
-    );
-  }
-}
-
-
 class MainScreen extends StatefulWidget {
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -137,11 +42,63 @@ class _MainScreenState extends State<MainScreen> {
     'mood': 100,
   };
 
+  void _onGameEndOxigen(bool won) {
+    if(won) {
+      setState(() {
+        resources['oxygen'] = (resources['oxygen'] ?? 0) + 100;
+      });
+    } else {
+      setState(() {
+        resources['oxygen'] = (resources['oxygen'] ?? 0) - 50;
+      });
+    }
+  }
+
   void changeResource(String resource1, String resource2, int count) {
     setState(() {
       resources[resource1] = (resources[resource1] ?? 0) + count;
       resources[resource2] = (resources[resource2] ?? 0) - count;
     });
+  }
+
+  void _showGameAsDialog(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      // Закрыть диалог, нажав вне его области
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black45,
+      // Цвет фона за диалогом
+      transitionDuration: const Duration(milliseconds: 300),
+      // Длительность анимации
+      pageBuilder: (BuildContext buildContext, Animation animation,
+          Animation secondaryAnimation) {
+        return Center(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.9,
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: AirFilterGameScreen(
+              initialRedCount: 5, // Примерное количество красных частиц
+              initialGreenCount: 5, // Примерное количество зеленых частиц
+              gameTimeSeconds: 10,
+              onGameEnd: _onGameEndOxigen,// Продолжительность игры в секундах
+            ), // Ваш виджет игры
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        // Анимация появления
+        return FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+          child: child,
+        );
+      },
+    );
   }
 
   List<MenuItem> menuItemsOxygen = [];
@@ -277,14 +234,20 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void openAirFilterGame() {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => AirFilterGameScreen()));
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => AirFilterGameScreen(
+              initialRedCount: 5, // Примерное количество красных частиц
+              initialGreenCount: 5, // Примерное количество зеленых частиц
+              gameTimeSeconds: 10,
+          onGameEnd: _onGameEndOxigen,// Продолжительность игры в секундах
+            )));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: openAirFilterGame,
+        onPressed: () => _showGameAsDialog(context),
         child: Icon(Icons.play_arrow),
       ),
       body: Container(
