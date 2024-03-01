@@ -49,20 +49,34 @@ class _AirFilterGameScreenState extends State<AirFilterGameScreen> with TickerPr
 
   void _moveParticles() {
     if (!isGameActive) return;
+
     final containerWidth = MediaQuery.of(context).size.width * 0.8 - 20; // Учитываем размер частицы
-    final containerHeight = MediaQuery.of(context).size.height * 0.8 - 50; // То же для высоты
+    final containerHeight = MediaQuery.of(context).size.height * 0.8 - 20; // То же для высоты
+    final speed = 5.0; // Задаем скорость движения частиц
 
     setState(() {
       particles.forEach((particle) {
-        particle.position = Offset.lerp(particle.position, particle.targetPosition, 0.02)!;
+        // Вычисляем вектор направления и обновляем позицию
+        Offset direction = particle.targetPosition - particle.position;
+        direction = direction / direction.distance * speed;
+        particle.position += direction;
 
-        // Переназначение targetPosition, если частица достигла её
-        if ((particle.targetPosition - particle.position).distance < 1) {
+        // Переназначение targetPosition, если частица достигла её или если частица достигла границы
+        if ((particle.targetPosition - particle.position).distance < speed) {
           final rand = Random();
           particle.targetPosition = Offset(
-            rand.nextDouble() * containerWidth,
-            rand.nextDouble() * containerHeight,
+            rand.nextDouble() * (containerWidth - 20) + 10, // Оставляем поля по 10 пикселей с каждой стороны
+            rand.nextDouble() * (containerHeight - 20) + 10,
           );
+        }
+
+
+        // Добавление "упругости" при столкновении с границами
+        if (particle.position.dx <= 0 || particle.position.dx >= containerWidth) {
+          particle.targetPosition = Offset(-particle.targetPosition.dx * 0.8, particle.targetPosition.dy);
+        }
+        if (particle.position.dy <= 0 || particle.position.dy >= containerHeight) {
+          particle.targetPosition = Offset(particle.targetPosition.dx, -particle.targetPosition.dy * 0.8);
         }
 
         // Корректировка текущей позиции, чтобы оставаться внутри контейнера
@@ -73,6 +87,7 @@ class _AirFilterGameScreenState extends State<AirFilterGameScreen> with TickerPr
       });
     });
   }
+
 
   @override
   void dispose() {

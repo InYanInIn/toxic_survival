@@ -84,7 +84,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             child: AirFilterGameScreen(
               initialRedCount: 5, // Примерное количество красных частиц
-              initialGreenCount: 5, // Примерное количество зеленых частиц
+              initialGreenCount: 30, // Примерное количество зеленых частиц
               gameTimeSeconds: 10,
               onGameEnd: _onGameEndOxigen,// Продолжительность игры в секундах
             ), // Ваш виджет игры
@@ -237,7 +237,7 @@ class _MainScreenState extends State<MainScreen> {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => AirFilterGameScreen(
               initialRedCount: 5, // Примерное количество красных частиц
-              initialGreenCount: 5, // Примерное количество зеленых частиц
+              initialGreenCount: 30, // Примерное количество зеленых частиц
               gameTimeSeconds: 10,
           onGameEnd: _onGameEndOxigen,// Продолжительность игры в секундах
             )));
