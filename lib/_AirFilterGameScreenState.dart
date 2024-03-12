@@ -101,7 +101,7 @@ class _AirFilterGameScreenState extends State<AirFilterGameScreen> with TickerPr
     _controller.stop(); // Останавливаем анимацию
 
     // Теперь устанавливаем сообщение и отображаем его без задержки
-    _gameMessage = won ? "Победа" : "Вы проиграли";
+    _gameMessage = won ? "Victory" : "Defeat :(";
     _showMessage = true;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

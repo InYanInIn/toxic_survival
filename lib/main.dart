@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:toxic_survival/test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
-
 import '_AirFilterGameScreenState.dart';
 
 void main() {
@@ -15,10 +17,107 @@ class MyGame extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MainScreen(),
+      home: SplashScreen(),
     );
   }
 }
+
+class SplashScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/menu.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(height: 50), // Добавьте это для пространства сверху
+              ElevatedButton(
+                child: Container(), // Удалите виджет Text и замените его на пустой контейнер
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.transparent, backgroundColor: Colors.transparent, shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(0), // Убираем скругление углов
+                  ),
+                  minimumSize: Size(200, 60), // Делаем эффект нажатия прозрачным
+                  shadowColor: Colors.transparent, // Делаем тень кнопки прозрачной
+                ),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => MainScreen()),
+                  );
+                },
+              ),
+              SizedBox(height: 27),
+              ElevatedButton(
+                child: Container(), // Удалите виджет Text и замените его на пустой контейнер
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.transparent, backgroundColor: Colors.transparent, shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(0), // Убираем скругление углов
+                ),
+                  minimumSize: Size(200, 60), // Делаем эффект нажатия прозрачным
+                  shadowColor: Colors.transparent, // Делаем тень кнопки прозрачной
+                ),
+                onPressed: () {
+                  SystemNavigator.pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class InteractiveObject {
+  int clickCount = 0;
+  int imageIndex = 0;
+  List<String> images;
+
+  InteractiveObject({required this.images});
+
+  void incrementClickCount(String key) {
+    clickCount += 1;
+    if (clickCount >= 10) {
+      clickCount = 0; // Сбросить счетчик
+      imageIndex = (imageIndex + 1); // Перейти к следующему изображению
+      GameStorage.saveImageIndex(key, imageIndex); // Сохранить индекс изображения
+    }
+  }
+
+  String get image => images[imageIndex];
+}
+
+class GameStorage {
+  static Future<void> saveGameData(String key, int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt(key, value);
+  }
+
+  static Future<int> loadGameData(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(key) ?? 0; // Возвращает 0, если ключ не найден
+  }
+
+  static Future<void> saveImageIndex(String key, int value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt(key, value);
+  }
+
+  static Future<int> loadImageIndex(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(key) ?? 0; // Возвращает 0, если ключ не найден
+  }
+}
+
 
 class MenuItem {
   final String text;
@@ -35,6 +134,43 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  InteractiveObject object4 = InteractiveObject(
+    images: [
+      'assets/fan.png',
+      'assets/air_purifier.png',
+      'assets/new_image4_2.png',
+      'assets/new_image4_3.png',
+      'assets/new_image4_4.png',
+    ],
+  );
+  InteractiveObject object3 = InteractiveObject(
+    images: [
+      'assets/plant_1.png',
+      'assets/plant_2.png',
+      'assets/plant_3.png',
+      'assets/new_image3_3.png',
+      'assets/new_image3_4.png',
+    ],
+  );
+  InteractiveObject object2 = InteractiveObject(
+    images: [
+      'assets/object2.png',
+      'assets/new_image2_1.png',
+      'assets/new_image2_2.png',
+      'assets/new_image2_3.png',
+      'assets/new_image2_4.png',
+    ],
+  );
+  InteractiveObject object1 = InteractiveObject(
+    images: [
+      'assets/flame200.png',
+      'assets/new_image1_1.png',
+      'assets/new_image1_2.png',
+      'assets/new_image1_3.png',
+      'assets/new_image1_4.png',
+    ],
+  );
+
   Map<String, int> resources = {
     'oxygen': 100,
     'electricity': 100,
@@ -43,13 +179,15 @@ class _MainScreenState extends State<MainScreen> {
   };
 
   void _onGameEndOxigen(bool won) {
-    if(won) {
+    if (won) {
       setState(() {
         resources['oxygen'] = (resources['oxygen'] ?? 0) + 100;
+        GameStorage.saveGameData('oxygen', resources['oxygen']!);
       });
     } else {
       setState(() {
         resources['oxygen'] = (resources['oxygen'] ?? 0) - 50;
+        GameStorage.saveGameData('oxygen', resources['oxygen']!);
       });
     }
   }
@@ -58,6 +196,8 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       resources[resource1] = (resources[resource1] ?? 0) + count;
       resources[resource2] = (resources[resource2] ?? 0) - count;
+      GameStorage.saveGameData(resource1, resources[resource1]!);
+      GameStorage.saveGameData(resource2, resources[resource2]!);
     });
   }
 
@@ -106,68 +246,81 @@ class _MainScreenState extends State<MainScreen> {
   late List<MenuItem> menuItemsElectricity = [];
   late List<MenuItem> menuItemWater = [];
 
+  void loadSavedData() async {
+    resources['oxygen'] = await GameStorage.loadGameData('oxygen');
+    resources['electricity'] = await GameStorage.loadGameData('electricity');
+    resources['water'] = await GameStorage.loadGameData('water');
+    resources['mood'] = await GameStorage.loadGameData('mood');
+  }
+
   @override
   void initState() {
     super.initState();
+    loadSavedData();
     menuItemsOxygen = [
       MenuItem(
-          text: 'Открыть окно',
-          onPressed: () => changeResource('oxygen', 'electricity', 5),
+          text: 'open the window',
+          onPressed: () {
+            changeResource('oxygen', 'electricity', 5);
+            object4.incrementClickCount('oxygenState'); // Увеличиваем счетчик здесь
+          },
           description: "description")
     ];
     menuItemsOxygen.add(MenuItem(
-        text: 'Открыть окно 2',
-        onPressed: () => changeResource('oxygen', 'electricity', 10),
-        description: "description"));
-    menuItemsOxygen.add(MenuItem(
-        text: 'Открыть окно 2',
-        onPressed: () => changeResource('oxygen', 'electricity', 10),
-        description: "description"));
-    menuItemsOxygen.add(MenuItem(
-        text: 'Открыть окно 2',
-        onPressed: () => changeResource('oxygen', 'electricity', 10),
-        description: "description"));
-    menuItemsOxygen.add(MenuItem(
-        text: 'Открыть окно 2',
-        onPressed: () => changeResource('oxygen', 'electricity', 10),
-        description: "description"));
-    menuItemsOxygen.add(MenuItem(
-        text: 'Открыть окно 2',
-        onPressed: () => changeResource('oxygen', 'electricity', 10),
-        description: "description"));
-    menuItemsOxygen.add(MenuItem(
-        text: 'Открыть окно 2',
-        onPressed: () => changeResource('oxygen', 'electricity', 10),
+        text: 'open the door',
+        onPressed: () {
+          changeResource('oxygen', 'electricity', 10);
+          object4.incrementClickCount('State'); // Увеличиваем счетчик здесь
+        },
         description: "description"));
     menuItemsMood = [
       MenuItem(
-          text: 'Выпить воды',
-          onPressed: () => changeResource('mood', 'water', 5),
+          text: 'drink water',
+          onPressed: () {
+            changeResource('mood', 'water', 5);
+            object3.incrementClickCount('moodState');  // Увеличиваем счетчик здесь
+          },
           description: "description")
     ];
     menuItemsMood.add(MenuItem(
-        text: 'Выпить воды 2',
-        onPressed: () => changeResource('mood', 'water', 10),
+        text: 'drink a pot of water',
+        onPressed: () {
+          changeResource('mood', 'water', 10);
+          object3.incrementClickCount('moodState'); // Увеличиваем счетчик здесь
+
+        },
         description: "description"));
     menuItemsElectricity = [
       MenuItem(
-          text: 'Сжечь мусор',
-          onPressed: () => changeResource('electricity', 'oxygen', 5),
+          text: 'burn the garbage',
+          onPressed: () {
+            changeResource('electricity', 'oxygen', 5);
+            object1.incrementClickCount('electricityState');
+          },
           description: "description")
     ];
     menuItemsElectricity.add(MenuItem(
-        text: 'Сжечь мусор 2',
-        onPressed: () => changeResource('electricity', 'oxygen', 10),
+        text: 'burn the trash can',
+        onPressed: () {
+          changeResource('electricity', 'oxygen', 10);
+          object1.incrementClickCount('electricityState');
+        },
         description: "description"));
     menuItemWater = [
       MenuItem(
-          text: 'Отфильтроваить воду',
-          onPressed: () => changeResource('water', 'mood', 5),
+          text: 'filter the water',
+          onPressed: () {
+            changeResource('water', 'mood', 5);
+            object2.incrementClickCount('waterState');
+          },
           description: "description")
     ];
     menuItemWater.add(MenuItem(
-        text: 'Отфильтроваить воду 2',
-        onPressed: () => changeResource('water', 'mood', 10),
+        text: 'filter a lot of water',
+        onPressed: () {
+          changeResource('water', 'mood', 10);
+          object2.incrementClickCount('waterState');
+        },
         description: "description"));
   }
 
@@ -190,7 +343,7 @@ class _MainScreenState extends State<MainScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      'Улучшить $text',
+                      'Upgrade $text',
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
@@ -234,13 +387,23 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void openAirFilterGame() {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => AirFilterGameScreen(
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Пользователь должен явно закрыть диалог
+      builder: (BuildContext context) {
+        return WillPopScope(
+          onWillPop: () async => false, // Перехватываем и блокируем попытки "назад"
+          child: Dialog(
+            child: AirFilterGameScreen(
               initialRedCount: 5, // Примерное количество красных частиц
               initialGreenCount: 30, // Примерное количество зеленых частиц
               gameTimeSeconds: 10,
-          onGameEnd: _onGameEndOxigen,// Продолжительность игры в секундах
-            )));
+              onGameEnd: _onGameEndOxigen,// Продолжительность игры в секундах
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -300,46 +463,75 @@ class _MainScreenState extends State<MainScreen> {
                     alignment: Alignment.center,
                     children: <Widget>[
                       Positioned(
-                        top: 100,
-                        right: 100,
+                        top: 200,
+                        right: 60,
                         child: GestureDetector(
-                          onTap: () =>
-                              showCustomMenu(menuItemsOxygen, 'кислород'),
-                          child: Image.asset('assets/object4.png',
-                              width: 200, height: 200),
+                          onTap: () {
+                            showCustomMenu(menuItemsOxygen, 'oxygen');
+                          },
+                          child: Transform.scale(
+                            scale: 1.5,
+                            child: Image.asset(object4.image,
+                                width: 300,
+                                height: 300,
+                                filterQuality: FilterQuality.none),
+                          ),
                         ),
                       ),
                       Positioned(
-                        right: 10,
+                        right: 20,
+                        bottom: 270,
                         child: GestureDetector(
-                          onTap: () => showCustomMenu(
-                              menuItemsElectricity, 'элетричество'),
-                          child: Image.asset('assets/object1.png',
-                              width: 80, height: 80),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 10,
-                        child: GestureDetector(
-                          onTap: () => showCustomMenu(menuItemWater, 'воду'),
-                          child: Image.asset('assets/object2.png',
-                              width: 80, height: 80),
-                        ),
-                      ),
-                      Positioned(
-                        left: 10,
-                        child: GestureDetector(
-                          onTap: () =>
-                              showCustomMenu(menuItemsMood, 'настроение'),
-                          child: Image.asset('assets/object3.png',
-                              width: 80, height: 80),
+                          onTap: () {
+                            showCustomMenu(
+                                menuItemsElectricity, 'electricity');
+                          },
+                          child: Transform.scale(
+                            scale: 2,
+                            child: Image.asset(object1.image,
+                                width: 150,
+                                height: 150,
+                                filterQuality: FilterQuality.none),
+                          ),
                         ),
                       ),
                       Positioned(
                         bottom: 200,
                         child: GestureDetector(
+                          onTap: () {
+                            showCustomMenu(menuItemWater, 'water');
+                          },
+                          child: Transform.scale(
+                            scale: 2.0, // Увеличиваем в 2 раза
+                            child: Image.asset(object2.image,
+                                width: 80,
+                                height: 80,
+                                filterQuality: FilterQuality.none),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 60,
+                        bottom: 300,
+                        child: GestureDetector(
+                          onTap: () {
+                            showCustomMenu(menuItemsMood, 'mood');
+                          },
+                          child: Transform.scale(
+                            scale: 2.0, // Увеличиваем в 2 раза
+                            child: Image.asset(object3.image,
+                                width: 80,
+                                height: 80,
+                                filterQuality: FilterQuality.none),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 350,
+                        child: Transform.scale(
+                          scale: 2.0, // Увеличиваем в 2 раза
                           child: Image.asset('assets/hero.png',
-                              width: 200, height: 200),
+                              filterQuality: FilterQuality.none),
                         ),
                       ),
                     ],
